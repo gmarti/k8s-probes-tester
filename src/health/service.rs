@@ -4,5 +4,7 @@ use super::alive;
 use super::ready;
 
 pub fn service() -> actix_web::Scope {
-    web::scope("/health").service(alive::service()).service(ready::service())
+    web::scope("/health")
+        .service(alive::service())
+        .service(ready::service())
 }

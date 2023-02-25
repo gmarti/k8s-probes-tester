@@ -1,3 +1,5 @@
+use std::sync::Mutex;
+
 use actix_web::{middleware, web, App, HttpServer};
 use anyhow::Result;
 
@@ -54,10 +56,15 @@ async fn main() -> Result<()> {
         args.address, args.port
     );
 
+    let is_ready = web::Data::new(Mutex::new(true));
+    let is_alive = web::Data::new(Mutex::new(true));
+
     HttpServer::new(move || {
         App::new() // enable logger
             .wrap(middleware::Logger::default())
             .wrap(middleware::Compress::default())
+            .app_data(is_ready.clone())
+            .app_data(is_alive.clone())
             .service(health::service())
             .route(
                 "/api-doc/openapi.json",
@@ -71,3 +78,101 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
+#[cfg(test)]
+mod tests {
+    use actix_web::body::to_bytes;
+    use actix_web::dev::Service;
+    use actix_web::{http, test, App, Error};
+
+    use super::*;
+
+    #[actix_web::test]
+    async fn ready_or_not() -> Result<(), Error> {
+        let is_ready = web::Data::new(Mutex::new(true));
+        let is_alive = web::Data::new(Mutex::new(true));
+        let app = App::new()
+            .app_data(is_ready.clone())
+            .app_data(is_alive.clone())
+            .service(health::service());
+        let app = test::init_service(app).await;
+
+        let get_request = test::TestRequest::get().uri("/health/ready").to_request();
+
+        // Initialy we are ready
+        let resp = app.call(get_request).await.unwrap();
+
+        assert_eq!(resp.status(), http::StatusCode::OK);
+
+        let response_body = resp.into_body();
+        assert_eq!(to_bytes(response_body).await.unwrap(), r##"I'm ready"##);
+
+        // Not ready!
+        let post_request = test::TestRequest::post().uri("/health/ready").to_request();
+        let resp = app.call(post_request).await.unwrap();
+        assert_eq!(resp.status(), http::StatusCode::OK);
+
+        let get_request = test::TestRequest::get().uri("/health/ready").to_request();
+        let resp = app.call(get_request).await.unwrap();
+
+        assert_eq!(resp.status(), http::StatusCode::INTERNAL_SERVER_ERROR);
+
+        let response_body = resp.into_body();
+        assert_eq!(to_bytes(response_body).await.unwrap(), r##"I'm not ready"##);
+
+        // Ready again !
+        let post_request = test::TestRequest::post().uri("/health/ready").to_request();
+        let resp = app.call(post_request).await.unwrap();
+        assert_eq!(resp.status(), http::StatusCode::OK);
+
+        let get_request = test::TestRequest::get().uri("/health/ready").to_request();
+        let resp = app.call(get_request).await.unwrap();
+
+        assert_eq!(resp.status(), http::StatusCode::OK);
+        Ok(())
+    }
+
+    #[actix_web::test]
+    async fn dead_or_alive() -> Result<(), Error> {
+        let is_ready = web::Data::new(Mutex::new(true));
+        let is_alive = web::Data::new(Mutex::new(true));
+        let app = App::new()
+            .app_data(is_ready.clone())
+            .app_data(is_alive.clone())
+            .service(health::service());
+        let app = test::init_service(app).await;
+
+        let get_request = test::TestRequest::get().uri("/health/alive").to_request();
+
+        // Initialy we are Alive
+        let resp = app.call(get_request).await.unwrap();
+
+        assert_eq!(resp.status(), http::StatusCode::OK);
+
+        let response_body = resp.into_body();
+        assert_eq!(to_bytes(response_body).await.unwrap(), r##"I'm alive"##);
+
+        // Kill it!
+        let post_request = test::TestRequest::post().uri("/health/alive").to_request();
+        let resp = app.call(post_request).await.unwrap();
+        assert_eq!(resp.status(), http::StatusCode::OK);
+
+        let get_request = test::TestRequest::get().uri("/health/alive").to_request();
+        let resp = app.call(get_request).await.unwrap();
+
+        assert_eq!(resp.status(), http::StatusCode::INTERNAL_SERVER_ERROR);
+
+        let response_body = resp.into_body();
+        assert_eq!(to_bytes(response_body).await.unwrap(), r##"I'm dead"##);
+
+        // Resurrect !
+        let post_request = test::TestRequest::post().uri("/health/alive").to_request();
+        let resp = app.call(post_request).await.unwrap();
+        assert_eq!(resp.status(), http::StatusCode::OK);
+
+        let get_request = test::TestRequest::get().uri("/health/alive").to_request();
+        let resp = app.call(get_request).await.unwrap();
+
+        assert_eq!(resp.status(), http::StatusCode::OK);
+        Ok(())
+    }
+}
