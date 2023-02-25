@@ -8,6 +8,8 @@ use env_logger::Env;
 use tracing::info;
 use utoipa::OpenApi;
 
+use crate::health::{alive::Alive, ready::Ready};
+
 mod health;
 
 #[derive(Debug, Parser)]
@@ -56,8 +58,8 @@ async fn main() -> Result<()> {
         args.address, args.port
     );
 
-    let is_ready = web::Data::new(Mutex::new(true));
-    let is_alive = web::Data::new(Mutex::new(true));
+    let is_ready = web::Data::new(Mutex::new(Alive::new(true)));
+    let is_alive = web::Data::new(Mutex::new(Ready::new(true)));
 
     HttpServer::new(move || {
         App::new() // enable logger
@@ -88,8 +90,8 @@ mod tests {
 
     #[actix_web::test]
     async fn ready_or_not() -> Result<(), Error> {
-        let is_ready = web::Data::new(Mutex::new(true));
-        let is_alive = web::Data::new(Mutex::new(true));
+        let is_ready = web::Data::new(Mutex::new(Alive::new(true)));
+        let is_alive = web::Data::new(Mutex::new(Ready::new(true)));
         let app = App::new()
             .app_data(is_ready.clone())
             .app_data(is_alive.clone())
@@ -133,8 +135,8 @@ mod tests {
 
     #[actix_web::test]
     async fn dead_or_alive() -> Result<(), Error> {
-        let is_ready = web::Data::new(Mutex::new(true));
-        let is_alive = web::Data::new(Mutex::new(true));
+        let is_ready = web::Data::new(Mutex::new(Alive::new(true)));
+        let is_alive = web::Data::new(Mutex::new(Ready::new(true)));
         let app = App::new()
             .app_data(is_ready.clone())
             .app_data(is_alive.clone())

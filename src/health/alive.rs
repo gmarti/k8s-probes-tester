@@ -1,7 +1,14 @@
 use std::sync::Mutex;
 
 use actix_web::{get, post, web, HttpResponse, Responder};
-use tracing::info;
+
+pub struct Alive(bool);
+
+impl Alive {
+    pub fn new(value: bool) -> Alive {
+        Alive(value)
+    }
+}
 
 pub fn service() -> actix_web::Scope {
     web::scope("/alive")
@@ -17,10 +24,9 @@ pub fn service() -> actix_web::Scope {
     )
 )]
 #[get("")]
-pub async fn dead_or_alive(is_alive: web::Data<Mutex<bool>>) -> impl Responder {
+pub async fn dead_or_alive(is_alive: web::Data<Mutex<Alive>>) -> impl Responder {
     let is_alive = is_alive.lock().unwrap();
-    info!("is_alive: {is_alive}");
-    if *is_alive {
+    if is_alive.0 {
         HttpResponse::Ok().body("I'm alive")
     } else {
         HttpResponse::InternalServerError().body("I'm dead")
@@ -34,10 +40,10 @@ pub async fn dead_or_alive(is_alive: web::Data<Mutex<bool>>) -> impl Responder {
     )
 )]
 #[post("")]
-pub async fn kill_or_res(is_alive: web::Data<Mutex<bool>>) -> impl Responder {
+pub async fn kill_or_res(is_alive: web::Data<Mutex<Alive>>) -> impl Responder {
     let mut is_alive = is_alive.lock().unwrap();
-    info!("mut is_alive: {is_alive}");
-    *is_alive = !*is_alive;
-    info!("mut is_alive: {is_alive}");
+
+    is_alive.0 = !is_alive.0;
+
     HttpResponse::Ok()
 }
