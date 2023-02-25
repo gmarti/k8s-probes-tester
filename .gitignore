@@ -1,0 +1,9 @@
+/target
+.direnv
+.DS_Store
+.vscode
+*.osm.pbf
+
+result
+
+!switzerland-2022-07-24.osm.pbf

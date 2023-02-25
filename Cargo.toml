@@ -1,0 +1,13 @@
+[package]
+name = "k8s-probes-tester"
+version = "1.0.0"
+edition = "2021"
+description = "k8s probes tester"
+
+[dependencies]
+actix-web = "4.3"
+anyhow = "1.0"
+clap = { version = "4.1", features = ["derive"] }
+env_logger = "0.10"
+tracing = { version = "0.1", features = ["log-always", "max_level_debug", "release_max_level_info"] }
+utoipa = { version = "3.0", features = ["actix_extras"] }
