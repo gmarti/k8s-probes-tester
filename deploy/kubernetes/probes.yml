@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: k8s-probes-tester
+  labels:
+    app: k8s-probes-tester
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 2
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: k8s-probes-tester
+  template:
+    metadata:
+      labels:
+        app: k8s-probes-tester
+    spec:
+      containers:
+      - name: k8s-probes-tester
+        image: gregorymarti/k8s-probes-tester:v1.0.1
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: http
+            containerPort: 8080
+            protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /health/alive
+            port: http
+          initialDelaySeconds: 2
+          periodSeconds: 2
+        readinessProbe:
+          httpGet:
+            path: /health/ready
+            port: http
+          initialDelaySeconds: 2
+          periodSeconds: 2

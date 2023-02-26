@@ -1,0 +1,12 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: k8s-probes-tester-pdb
+  labels:    
+    app: k8s-probes-tester
+spec:
+  #maxUnavailable: 2
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: k8s-probes-tester

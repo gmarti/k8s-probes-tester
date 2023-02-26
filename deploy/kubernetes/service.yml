@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: k8s-probes-tester
+spec:
+  type: ClusterIP
+  # ClusterIP, NodePort, LoadBalancer, ExternalName
+  selector:
+    app:  k8s-probes-tester
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8081
+      targetPort: http
+      #nodePort: 30000
