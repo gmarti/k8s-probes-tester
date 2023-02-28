@@ -2,6 +2,7 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: k8s-probes-tester-pdb
+  namespace: training
   labels:    
     app: k8s-probes-tester
 spec:
