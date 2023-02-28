@@ -2,20 +2,24 @@
 
 ## INSTALL
 
-brew install ubuntu/microk8s/microk8s
+brew install microk8s
 
-microk8s install --cpu=2 --mem=8
+microk8s install --cpu=1 --mem=4
 
 cp ~/.kube/config ~/.kube/config.zf
 
-KUBECONFIG=~/.kube/config.zf:/etc/rancher/k3s/k3s.yaml kubectl config view --merge --flatten > ~/.kube/config
+microk8s config > ~/.kube/microk8s-config
 
-kubectx default
+KUBECONFIG=~/.kube/config.zf:~/.kube/microk8s-config kubectl config view --merge --flatten > ~/.kube/config
+
+kubectx microk8s
 
 kubectl get namespace
 
 ## UNINSTALL
 
-minikube delete
+microk8s reset # start fresh
 
-brew uninstall minikube
+microk8s stop
+
+brew uninstall microk8s
