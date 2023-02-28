@@ -1,8 +1,10 @@
-# Minikube
+# microk8s
 
 ## INSTALL
 
-brew install minikube
+brew install ubuntu/microk8s/microk8s
+
+microk8s install --cpu=2 --mem=8
 
 cp ~/.kube/config ~/.kube/config.zf
 
