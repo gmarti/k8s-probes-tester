@@ -1,8 +1,8 @@
-# K3S
+# Minikube
 
 ## INSTALL
 
-curl -sfL https://get.k3s.io | sh - 
+brew install minikube
 
 cp ~/.kube/config ~/.kube/config.zf
 
@@ -14,6 +14,6 @@ kubectl get namespace
 
 ## UNINSTALL
 
-/usr/local/bin/k3s-uninstall.sh
+minikube delete
 
- cp ~/.kube/config.zf ~/.kube/config
+brew uninstall minikube
