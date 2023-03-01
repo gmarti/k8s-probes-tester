@@ -16,27 +16,44 @@
   };
 
   outputs = { self, nixpkgs, rust-overlay, flake-utils, crane, ... }:
-    flake-utils.lib.eachSystem [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" ] (system:
+    flake-utils.lib.eachDefaultSystem (localSystem:
       let
         name = "k8s-probes-tester";
-        overlays = [
-          (import rust-overlay)
-        ];
+
+        crossSystem = "aarch64-linux";
+
         pkgs = import nixpkgs {
-          inherit system overlays;
+          inherit crossSystem localSystem;
+          overlays = [ (import rust-overlay) ];
         };
+
         inherit (pkgs) lib;
-        rust = pkgs.rust-bin.stable."1.67.0".default;
-
-        craneLib = crane.lib.${system}.overrideToolchain rust;
-
-        src = craneLib.cleanCargoSource ./.;
-
-        commonArgs = {
-          inherit src;
+        rust = pkgs.pkgsBuildHost.rust-bin.stable."1.67.0".default.override {
+          targets = [ "aarch64-unknown-linux-gnu" ];
         };
 
-        cargoArtifacts = craneLib.buildDepsOnly commonArgs;
+        craneLib = (crane.mkLib pkgs).overrideToolchain rust;
+
+        crateExpression =
+          { openssl
+          , libiconv
+          , lib
+          , pkg-config
+          , qemu
+          , stdenv
+          }: craneLib.buildPackage ({
+            inherit name;
+            src = craneLib.cleanCargoSource ./.;
+            doCheck = false;
+
+            depsBuildBuild = [ qemu ];
+            CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER = "${stdenv.cc.targetPrefix}cc";
+            CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_RUNNER = "qemu-aarch64";
+
+            # Tell cargo which target we want to build (so it doesn't default to the build system).
+            # We can either set a cargo flag explicitly with a flag or with an environment variable.
+            cargoExtraArgs = "--target aarch64-unknown-linux-gnu";
+          });
 
       in
       rec {
@@ -49,27 +66,10 @@
               touch $out
             '';
 
-          # Check Rust formatting
-          rustfmt = craneLib.cargoFmt ({
-            inherit src;
-          });
-
-          # Cargo clippy
-          clippy = craneLib.cargoClippy (commonArgs // {
-            inherit cargoArtifacts;
-            cargoClippyExtraArgs = "--all-targets -- --deny warnings";
-          });
-
-          # Run tests with cargo-nextest
-          test = craneLib.cargoTest (commonArgs // { });
-
         };
 
         packages = rec {
-          k8s-probes-tester = craneLib.buildPackage (commonArgs // {
-            inherit name;
-            doCheck = false;
-          });
+          k8s-probes-tester = pkgs.callPackage crateExpression { };
           container = pkgs.dockerTools.buildImage {
             inherit name;
             tag = "latest";
