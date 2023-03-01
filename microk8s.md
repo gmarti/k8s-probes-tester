@@ -2,7 +2,7 @@
 
 ## INSTALL
 
-brew install microk8s
+brew install ubuntu/microk8s/microk8s
 
 microk8s install --cpu=1 --mem=4
 
