@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
       - name: k8s-probes-tester
-        image: gregorymarti/k8s-probes-tester:v1.0.1
+        image: gregorymarti/k8s-probes-tester:v1.0.2
         imagePullPolicy: IfNotPresent
         ports:
           - name: http

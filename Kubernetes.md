@@ -64,7 +64,7 @@ kubectl port-forward k8s-probes-tester 8080
 
 curl 'http://localhost:8080/health/alive'
 ```
-> change image to v1.0.2
+> change image to v1.0.3
 ```
 kubectl apply -f pod.yml
 
@@ -91,7 +91,7 @@ kubectl describe replicaset
 
 watch kubectl get replicaset
 ```
-> change image to v1.0.2
+> change image to v1.0.3
 ```
 kubectl apply -f deploy.yml
 ```
@@ -101,11 +101,11 @@ kubectl apply -f deploy.yml
 
 kubectl scale deploy k8s-probes-tester --replicas=20
 ```
-> change image to v1.0.1
+> change image to v1.0.2
 ```
 kubectl apply -f deploy.yml
 ```
-> change image to v1.0.1 and maxUnavailable to 2
+> change image to v1.0.3 and maxUnavailable to 2
 ```
 kubectl apply -f deploy.yml
 
@@ -180,7 +180,7 @@ watch kubectl get pods
 
 curl http://localhost:30000/health/ready
 ```
-> change image to v1.0.2
+> change image to v1.0.3
 ```
 kubectl apply -f probles.yml
 
