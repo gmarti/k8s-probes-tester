@@ -6,7 +6,7 @@ curl -sfL https://get.k3s.io | sh -
 
 cp ~/.kube/config ~/.kube/config.zf
 
-sudo chmod +r /etc/rancher/k3s/k3s.yaml
+sudo chmod 644 /etc/rancher/k3s/k3s.yaml
 
 KUBECONFIG=~/.kube/config.zf:/etc/rancher/k3s/k3s.yaml kubectl config view --merge --flatten > ~/.kube/config
 
