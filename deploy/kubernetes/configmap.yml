@@ -1,0 +1,10 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: k8s-probes-tester
+  namespace: training
+  labels:
+    app: k8s-probes-tester
+data:
+  K8S_PROBES_TESTER_KEY1: value1
+  K8S_PROBES_TESTER_KEY2: value2

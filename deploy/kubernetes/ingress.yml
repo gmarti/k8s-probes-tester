@@ -1,0 +1,29 @@
+
+apiVersion:  networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: k8s-probes-tester
+  namespace: training
+  labels:
+    app: k8s-probes-tester
+  annotations:
+    certmanager.k8s.io/cluster-issuer: letsencrypt
+    kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+    # Virtual hosting
+    - host: k8s-probes-tester.test.com 
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: k8s-probes-tester
+                port: 
+                  name: http
+  # SSL termination 
+  tls:
+    - secretName: k8s-probes-tester-letsencrypt-tls
+      hosts:
+       - k8s-probes-tester.test.com

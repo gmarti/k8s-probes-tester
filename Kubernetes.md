@@ -23,9 +23,11 @@ kubectx
 ```
 kubectl get nodes
 kubectl get nodes -o wide
+kubectl get nodes -L node-lifecycle -L kubernetes.io/arch
 kubectl top nodes
 kubectl describe node 
 kubectl describe node | grep Event
+ 
 ```
 
 ## Namespace [namespace.yml]
@@ -75,6 +77,14 @@ kubectl delete -f pod.yml | kubectl delete pod k8s-probes-tester
 ```
 ***How to deploy multiple replicas of a pod ?***
 ***How to roll the updates ?***
+
+## Labels
+
+kubectl get all -l app=booking-service
+
+kubectl api-resources --verbs=list --namespaced -o name \           
+  xargs -n 1 kubectl get --show-kind --ignore-not-found -l app=booking-service
+
 
 ## Deployment [deploy.yml]
 ```
@@ -246,3 +256,32 @@ kubectl-evict-pod
 
 kubectl delete pod 
 ```
+
+## Ingress [ingress.yml]
+
+
+## ConfigMap and Secret
+## [configmap.yml]
+## [secret.yml]
+## [pod_configmap_secret.yml]
+kubectl apply -f configmap.yml
+
+kubectl get configmap 
+
+kubectl describe configmap
+
+kubectl apply -f secret.yml
+
+kubectl get secret
+
+kubectl describe secret
+
+kubectl get secret k8s-probes-tester -o jsonpath='{.data.password}' | base64 --decode -
+
+echo -n 'Security!' | base64
+
+kubectl create configmap k8s-probes-tester-logs --from-file=logback.xml
+
+kubectl get configmap k8s-probes-tester-logs
+
+kubectl describe configmap k8s-probes-tester-logs
