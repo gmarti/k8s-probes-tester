@@ -80,10 +80,10 @@ kubectl delete -f pod.yml | kubectl delete pod k8s-probes-tester
 
 ## Labels
 
-kubectl get all -l app=booking-service
+kubectl get all -l app=k8s-probes-tester
 
 kubectl api-resources --verbs=list --namespaced -o name \           
-  xargs -n 1 kubectl get --show-kind --ignore-not-found -l app=booking-service
+  xargs -n 1 kubectl get --show-kind --ignore-not-found -l app=k8s-probes-tester
 
 
 ## Deployment [deploy.yml]
